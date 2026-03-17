@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Covered Put Calculator</title>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 20px;
+            max-width: 600px;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        label {
+            font-weight: 600;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #007aff;
+            color: white;
+            border: none;
+            font-size: 17px;
+            cursor: pointer;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: #0063cc;
+        }
+
+        .error {
+            color: #cc0000;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .result-box {
+            margin-top: 22px;
+            padding: 18px;
+            border-radius: 12px;
+            background: #f4f4f4;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1c1c1e;
+                color: #f2f2f7;
+            }
+
+            .result-box {
+                background: #2c2c2e;
+                color: #f2f2f7;
+            }
+
+            input, select {
+                background: #3a3a3c;
+                border: 1px solid #555;
+                color: #f2f2f7;
+            }
+
+            button {
+                background: #0a84ff;
+                color: white;
+            }
+
+            label {
+                color: #d1d1d6;
+            }
+
+            .error {
+                color: #ff453a;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Covered Put Calculator</h2>
+
+<form method="POST">
+
+    <label>Ticker:</label>
+    <input type="text"
+           name="ticker"
+           placeholder="AAPL"
+           value="{{ request.form.ticker }}"
+           required>
+
+    <button name="action" value="load">Load Expirations</button>
+
+    <label>Expiration:</label>
+    <select name="expiration" {% if not expirations %}disabled{% endif %}>
+        {% if expirations %}
+            {% for e in expirations %}
+                <option value="{{ e }}"
+                    {% if request.form.expiration == e %}selected{% endif %}>
+                    {{ e }}
+                </option>
+            {% endfor %}
+        {% else %}
+            <option>Load expirations first...</option>
+        {% endif %}
+    </select>
+
+    <label>Risk Level:</label>
+    <select name="risk">
+        <option value="very_safe"
+            {% if request.form.risk == 'very_safe' %}selected{% endif %}>
+            Very Safe (Δ ≈ -0.10)
+        </option>
+
+        <option value="safe"
+            {% if request.form.risk == 'safe' %}selected{% endif %}>
+            Safe (Δ ≈ -0.15)
+        </option>
+
+        <option value="moderate"
+            {% if request.form.risk == 'moderate' %}selected{% endif %}>
+            Moderate (Δ ≈ -0.20)
+        </option>
+
+        <option value="aggressive"
+            {% if request.form.risk == 'aggressive' %}selected{% endif %}>
+            Aggressive (Δ ≈ -0.25)
+        </option>
+
+        <option value="very_aggressive"
+            {% if request.form.risk == 'very_aggressive' %}selected{% endif %}>
+            Very Aggressive (Δ ≈ -0.30)
+        </option>
+    </select>
+
+    <button name="action" value="calculate">Calculate</button>
+
+</form>
+
+{% if error %}
+    <p class="error">{{ error }}</p>
+{% endif %}
+
+{% if result %}
+<div class="result-box">
+    <h3>Results for {{ result.ticker }}</h3>
+
+    <p><strong>Stock Price:</strong> ${{ result.stock_price }}</p>
+    <p><strong>Expiration:</strong> {{ result.expiration }} ({{ result.days_out }} days)</p>
+    <p><strong>Risk Level:</strong> {{ result.risk_label }}</p>
+    <p><strong>Strike:</strong> {{ result.strike }}</p>
+
+    <p>
+        <strong>IV:</strong> {{ result.iv }}
+        {% if result.iv_estimated %}
+            <span style="color:#cc0000; font-size:0.9em;">(estimated)</span>
+        {% endif %}
+    </p>
+
+    <p><strong>Assignment Probability:</strong> {{ result.assign_prob }}%</p>
+    <p><strong>Premium:</strong> ${{ result.premium }}</p>
+</div>
+{% endif %}
+
+</body>
+</html>
