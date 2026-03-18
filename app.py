@@ -107,7 +107,7 @@ def index():
         ticker = request.form.get("ticker", "").upper().strip()
 
         if not ticker:
-            return render_template("index_puts.html", error="Ticker required.")
+            return render_template("index.html", error="Ticker required.")
 
         expirations = get_expirations(ticker)
 
