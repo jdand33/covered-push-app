@@ -28,12 +28,10 @@ def black_scholes_put_delta(S, K, T, r, sigma):
     if sigma <= 0 or T <= 0:
         return None
     d1 = (math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * math.sqrt(T))
-    # put delta = N(d1) - 1
     return norm_cdf(d1) - 1.0
 
 
 def estimate_iv_put(S, K, T, r, price):
-    # price is put mid
     sigma = 0.30
     for _ in range(20):
         if sigma <= 0:
@@ -136,9 +134,6 @@ def index():
                 return render_template("index_puts.html", expirations=expirations,
                                        error="Could not load option chain.")
 
-            # -------------------------
-            # PUT FILTER + FALLBACK DELTA/IV
-            # -------------------------
             puts = [o for o in chain if o.get("option_type") == "put"]
             enhanced = []
 
@@ -175,9 +170,6 @@ def index():
                 return render_template("index_puts.html", expirations=expirations,
                                        error="No valid put options found for this expiration.")
 
-            # -------------------------
-            # PICK BEST STRIKE
-            # -------------------------
             target_delta = PUT_DELTA_TARGETS.get(risk, -0.20)
             best = min(enhanced, key=lambda p: abs(p["computed_delta"] - target_delta))
 
@@ -209,4 +201,6 @@ def health():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # REQUIRED FOR RAILWAY
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
