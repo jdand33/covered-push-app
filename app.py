@@ -114,24 +114,24 @@ def index():
         if action == "load":
             if not expirations:
                 error = "Could not load expirations."
-            return render_template("index_puts.html", expirations=expirations, error=error)
+            return render_template("index.html", expirations=expirations, error=error)
 
         if action == "calculate":
             expiration = request.form.get("expiration")
             risk = request.form.get("risk")
 
             if not expiration:
-                return render_template("index_puts.html", expirations=expirations,
+                return render_template("index.html", expirations=expirations,
                                        error="Select an expiration.")
 
             stock_price = get_stock_price(ticker)
             if not stock_price:
-                return render_template("index_puts.html", expirations=expirations,
+                return render_template("index.html", expirations=expirations,
                                        error="Could not fetch stock price.")
 
             chain = get_chain(ticker, expiration).get("options", {}).get("option", [])
             if not chain:
-                return render_template("index_puts.html", expirations=expirations,
+                return render_template("index.html", expirations=expirations,
                                        error="Could not load option chain.")
 
             puts = [o for o in chain if o.get("option_type") == "put"]
@@ -167,7 +167,7 @@ def index():
                 enhanced.append(p)
 
             if not enhanced:
-                return render_template("index_puts.html", expirations=expirations,
+                return render_template("index.html", expirations=expirations,
                                        error="No valid put options found for this expiration.")
 
             target_delta = PUT_DELTA_TARGETS.get(risk, -0.20)
@@ -190,9 +190,9 @@ def index():
                 "premium": premium,
             }
 
-            return render_template("index_puts.html", expirations=expirations, result=result)
+            return render_template("index.html", expirations=expirations, result=result)
 
-    return render_template("index_puts.html")
+    return render_template("index.html")
 
 
 @app.route("/health")
